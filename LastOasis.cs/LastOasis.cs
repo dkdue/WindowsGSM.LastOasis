@@ -46,7 +46,7 @@ namespace WindowsGSM.Plugins
         public string QueryPort = "27015"; // Default query port
         public string Defaultmap = "neon_server1"; // Default map name
         public string Maxplayers = "100"; // Default maxplayers
-        public string Additional = "-identifier=neon_server1 -port=5555 -slots=100 -QueryPort=27015 -CustomerKey=eRTbfOGgGbX2MKZe -ProviderKey=qNw0DZgGBar3JGBy -OverrideConnectionAddress=YOUREXTERNALIP"; // Additional server start parameter
+        public string Additional = "-identifier=neon_server1 -slots=100 -CustomerKey=eRTbfOGgGbX2MKZe -ProviderKey=qNw0DZgGBar3JGBy -OverrideConnectionAddress=YOUREXTERNALIP"; // Additional server start parameter
 
 
         // - Create a default cfg for the game server after installation
@@ -88,8 +88,8 @@ namespace WindowsGSM.Plugins
             // Prepare start parameter
             //string param = string.IsNullOrWhiteSpace(_serverData.ServerMap) ? string.Empty : $"{_serverData.ServerMap}?listen";
             //string param = string.IsNullOrWhiteSpace(_serverData.ServerPort) ? string.Empty : $" MultiHome={_serverData.ServerIP}";
-            //param += string.IsNullOrWhiteSpace(_serverData.ServerPort) ? string.Empty : $"?Port={_serverData.ServerPort}";
-			//param += string.IsNullOrWhiteSpace(_serverData.ServerPort) ? string.Empty : $"?QueryPort={_serverData.ServerQueryPort}";
+            string param = string.IsNullOrWhiteSpace(_serverData.ServerPort) ? string.Empty : $"?Port={_serverData.ServerPort}";
+			param += string.IsNullOrWhiteSpace(_serverData.ServerPort) ? string.Empty : $"?QueryPort={_serverData.ServerQueryPort}";
             param += $"?{_serverData.ServerParam}? -log -force_steamclient_link -messaging -NoLiveServer -EnableCheats -backendapiurloverride="backend.last-oasis.com" ";
 
             // Prepare Process
