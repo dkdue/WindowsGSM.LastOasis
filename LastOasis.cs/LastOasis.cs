@@ -24,7 +24,7 @@ namespace WindowsGSM.Plugins
         };
 
         // - Settings properties for SteamCMD installer
-        public override bool loginAnonymous => false;
+        public override bool loginAnonymous => true;
         public override string AppId => "920720"; // Game server appId, LastOasis is 920720
 
         // - Standard Constructor and properties
