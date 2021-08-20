@@ -18,7 +18,7 @@ namespace WindowsGSM.Plugins
             name = "WindowsGSM.LastOasis", // WindowsGSM.XXXX
             author = "kessef",
             description = "WindowsGSM plugin for supporting LastOasis Dedicated Server",
-            version = "1.0",
+            version = "1.1",
             url = "https://github.com/dkdue/WindowsGSM.LastOasis", // Github repository link (Best practice)
             color = "#34c9eb" // Color Hex
         };
@@ -37,7 +37,7 @@ namespace WindowsGSM.Plugins
         public override string StartPath => @"Mist\Binaries\Win64\MistServer-Win64-Shipping.exe"; // Game server start path
         public string FullName = "LastOasis Dedicated Server"; // Game server FullName
         public bool AllowsEmbedConsole = true;  // Does this server support output redirect?
-        public int PortIncrements = 1; // This tells WindowsGSM how many ports should skip after installation
+        public int PortIncrements = 2; // This tells WindowsGSM how many ports should skip after installation
         public object QueryMethod = new A2S(); // Query method should be use on current server type. Accepted value: null or new A2S() or new FIVEM() or new UT3()
 
 
@@ -46,59 +46,41 @@ namespace WindowsGSM.Plugins
         public string QueryPort = "27015"; // Default query port
         public string Defaultmap = "neon_server1"; // Default map name
         public string Maxplayers = "100"; // Default maxplayers
-        public string Additional = "-identifier=neon_server1 -slots=100 -CustomerKey=Gameserverregistrationkey -ProviderKey=Selfhostedgameserversregistrationkeys -OverrideConnectionAddress=YOUREXTERNALIP"; // Additional server start parameter
+        public string Additional = "-CustomerKey=GameServerRegistrationKey -ProviderKey=SelfHostedGameServersRegistrationKey"; // Additional server start parameter
 
 
         // - Create a default cfg for the game server after installation
         public async void CreateServerCFG()
         {
-            string configPath = Functions.ServerPath.GetServersServerFiles(_serverData.ServerID, @"Mist\Saved\Config\WindowsServer\Game.ini");
-            Directory.CreateDirectory(Path.GetDirectoryName(configPath));
-
-            string name = String.Concat(FullName.Where(c => !Char.IsWhiteSpace(c)));
-
-            //Download Game.ini
-            if (await DownloadGameServerConfig(configPath, configPath))
-            {
-                string configText = File.ReadAllText(configPath);
-                configText = configText.Replace("{{session_name}}", _serverData.ServerName);
-                configText = configText.Replace("{{rcon_port}}", _serverData.ServerQueryPort);
-                configText = configText.Replace("{{max_players}}", _serverData.ServerMaxPlayer);
-                File.WriteAllText(configPath, configText);
-            }
+           //Not needed. All config web based from https://myrealm.lastoasis.gg/
         }
 
         // - Start server function, return its Process to WindowsGSM
         public async Task<Process> Start()
         {
-            // Check for files in Win64
-            string win64 = Path.Combine(ServerPath.GetServersServerFiles(_serverData.ServerID, @"Mist\Binaries\Win64\"));
-            string[] neededFiles = { "steamclient64.dll", "tier0_s64.dll", "vstdlib_s64.dll" };
-
-            foreach (string file in neededFiles)
-            {
-                if (!File.Exists(Path.Combine(win64, file)))
-                {
-                    File.Copy(Path.Combine(ServerPath.GetServersServerFiles(_serverData.ServerID), file), Path.Combine(win64, file));
-                }
-            }
-
-            string shipExePath = Functions.ServerPath.GetServersServerFiles(_serverData.ServerID, StartPath);
 
             // Prepare start parameter
-            //string param = string.IsNullOrWhiteSpace(_serverData.ServerMap) ? string.Empty : $"{_serverData.ServerMap}?listen";
-            //string param = string.IsNullOrWhiteSpace(_serverData.ServerPort) ? string.Empty : $" MultiHome={_serverData.ServerIP}";
-            string param = string.IsNullOrWhiteSpace(_serverData.ServerPort) ? string.Empty : $"?Port={_serverData.ServerPort}";
-			param += string.IsNullOrWhiteSpace(_serverData.ServerPort) ? string.Empty : $"?QueryPort={_serverData.ServerQueryPort}";
-            param += $"?{_serverData.ServerParam}? -log -force_steamclient_link -messaging -NoLiveServer -EnableCheats -backendapiurloverride=backend.last-oasis.com";
+			string param = $" -log -force_steamclient_link -messaging -NoLiveServer -EnableCheats -backendapiurloverride=backend.last-oasis.com"; // Set basic parameters
+			param += string.IsNullOrWhiteSpace(_serverData.ServerMap) ? string.Empty : $" -identifier={_serverData.ServerMap}"; //Use GUI Map config to set server name
+            param += string.IsNullOrWhiteSpace(_serverData.ServerPort) ? string.Empty : $" -port={_serverData.ServerPort}"; 
+			param += string.IsNullOrWhiteSpace(_serverData.ServerParam) ? string.Empty : $" {_serverData.ServerParam}"; 
+			param += string.IsNullOrWhiteSpace(_serverData.ServerMaxPlayer) ? string.Empty : $" -slots={_serverData.ServerMaxPlayer}";
+			param += string.IsNullOrWhiteSpace(_serverData.ServerQueryPort) ? string.Empty : $" -QueryPort={_serverData.ServerQueryPort}";
+            param += string.IsNullOrWhiteSpace(_serverData.ServerIP) ? string.Empty : $" -OverrideConnectionAddress={_serverData.ServerIP}";
 
+			
+			// Saw this in another plugin from Kickbut101. Comment on it is right, this was useful. 
+            // Output the startupcommands used. Helpful for troubleshooting server commands and testing them out - leaving this in because it's helpful af.			
+			var startupCommandsOutputTxtFile = ServerPath.GetServersServerFiles(_serverData.ServerID, "startupCommandsUsed.log");
+            File.WriteAllText(startupCommandsOutputTxtFile, $"{param}");
+			
             // Prepare Process
             var p = new Process
             {
                 StartInfo =
                 {
                     WorkingDirectory = ServerPath.GetServersServerFiles(_serverData.ServerID),
-                    FileName = shipExePath,
+                    FileName = ServerPath.GetServersServerFiles(_serverData.ServerID, StartPath),
                     Arguments = param,
                     WindowStyle = ProcessWindowStyle.Minimized,
                     UseShellExecute = false
@@ -165,31 +147,6 @@ namespace WindowsGSM.Plugins
                 }
             });
 			await Task.Delay(20000);
-        }
-
-        // Get ini files
-        public static async Task<bool> DownloadGameServerConfig(string fileSource, string filePath)
-        {
-            Directory.CreateDirectory(Path.GetDirectoryName(filePath));
-
-            if (File.Exists(filePath))
-            {
-                File.Delete(filePath);
-            }
-
-            try
-            {
-                using (WebClient webClient = new WebClient())
-                {
-                    await webClient.DownloadFileTaskAsync($"https://raw.githubusercontent.com/dkdue/WindowsGSM-Configs/main/LastOasis/Game.ini", filePath);
-                }
-            }
-            catch (Exception e)
-            {
-                System.Diagnostics.Debug.WriteLine($"Github.DownloadGameServerConfig {e}");
-            }
-
-            return File.Exists(filePath);
         }
     }
 }
