@@ -58,19 +58,6 @@ namespace WindowsGSM.Plugins
         // - Start server function, return its Process to WindowsGSM
         public async Task<Process> Start()
         {
-            // Check for files in Win64
-            string win64 = Path.Combine(ServerPath.GetServersServerFiles(_serverData.ServerID, @"Mist\Binaries\Win64\"));
-            string[] neededFiles = { "steamclient64.dll", "tier0_s64.dll", "vstdlib_s64.dll" };
-
-            foreach (string file in neededFiles)
-            {
-                if (!File.Exists(Path.Combine(win64, file)))
-                {
-                    File.Copy(Path.Combine(ServerPath.GetServersServerFiles(_serverData.ServerID), file), Path.Combine(win64, file));
-                }
-            }
-
-            string shipExePath = Functions.ServerPath.GetServersServerFiles(_serverData.ServerID, StartPath);
 
             // Prepare start parameter
 			string param = $" -log -force_steamclient_link -messaging -NoLiveServer -EnableCheats -backendapiurloverride=backend.last-oasis.com"; // Set basic parameters
@@ -93,7 +80,7 @@ namespace WindowsGSM.Plugins
                 StartInfo =
                 {
                     WorkingDirectory = ServerPath.GetServersServerFiles(_serverData.ServerID),
-                    FileName = shipExePath,
+                    FileName = ServerPath.GetServersServerFiles(_serverData.ServerID, StartPath),
                     Arguments = param,
                     WindowStyle = ProcessWindowStyle.Minimized,
                     UseShellExecute = false
