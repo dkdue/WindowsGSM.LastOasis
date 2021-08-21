@@ -1,6 +1,3 @@
-# IMPORTANT
-First Beta of the LastOasis server, at the moment I am not at home and I cannot test it on my servers, I just hope it works and if something fails, I can solve it with your comments.
-
 # WindowsGSM.LastOasis
 🧩WindowsGSM plugin that provides Last Oasis Dedicated server support!
 
