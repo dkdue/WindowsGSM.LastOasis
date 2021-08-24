@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Diagnostics;
 using System.Threading.Tasks;
 using WindowsGSM.Functions;
@@ -52,12 +52,20 @@ namespace WindowsGSM.Plugins
         // - Create a default cfg for the game server after installation
         public async void CreateServerCFG()
         {
-           //Not needed. All config web based from https://myrealm.lastoasis.gg/
+             //Not needed. All config web based from https://myrealm.lastoasis.gg/
         }
 
         // - Start server function, return its Process to WindowsGSM
         public async Task<Process> Start()
         {
+
+			//Get WAN IP from net
+            string externalIpString = new WebClient().DownloadString("http://icanhazip.com").Replace("\\r\\n", "").Replace("\\n", "").Trim();
+            var externalIp = IPAddress.Parse(externalIpString);
+
+
+
+            string shipExePath = Functions.ServerPath.GetServersServerFiles(_serverData.ServerID, StartPath);
 
             // Prepare start parameter
 			string param = $" -log -force_steamclient_link -messaging -NoLiveServer -EnableCheats -backendapiurloverride=backend.last-oasis.com"; // Set basic parameters
@@ -66,14 +74,15 @@ namespace WindowsGSM.Plugins
 			param += string.IsNullOrWhiteSpace(_serverData.ServerParam) ? string.Empty : $" {_serverData.ServerParam}"; 
 			param += string.IsNullOrWhiteSpace(_serverData.ServerMaxPlayer) ? string.Empty : $" -slots={_serverData.ServerMaxPlayer}";
 			param += string.IsNullOrWhiteSpace(_serverData.ServerQueryPort) ? string.Empty : $" -QueryPort={_serverData.ServerQueryPort}";
-            param += string.IsNullOrWhiteSpace(_serverData.ServerIP) ? string.Empty : $" -OverrideConnectionAddress={_serverData.ServerIP}";
+            //param += string.IsNullOrWhiteSpace(_serverData.ServerIP) ? string.Empty : $" -OverrideConnectionAddress={_serverData.ServerIP}";
+			param += string.IsNullOrWhiteSpace(_serverData.ServerIP) ? string.Empty : $" -OverrideConnectionAddress={externalIp.ToString()}";
 
-			
+
 			// Saw this in another plugin from Kickbut101. Comment on it is right, this was useful. 
             // Output the startupcommands used. Helpful for troubleshooting server commands and testing them out - leaving this in because it's helpful af.			
 			var startupCommandsOutputTxtFile = ServerPath.GetServersServerFiles(_serverData.ServerID, "startupCommandsUsed.log");
             File.WriteAllText(startupCommandsOutputTxtFile, $"{param}");
-			
+
             // Prepare Process
             var p = new Process
             {
@@ -148,5 +157,6 @@ namespace WindowsGSM.Plugins
             });
 			await Task.Delay(20000);
         }
+
     }
 }
