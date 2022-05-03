@@ -60,7 +60,7 @@ namespace WindowsGSM.Plugins
         {
 
 			//Get WAN IP from net
-            string externalIpString = new WebClient().DownloadString("http://icanhazip.com").Replace("\\r\\n", "").Replace("\\n", "").Trim();
+            string externalIpString = new WebClient().DownloadString("https://ipv4.icanhazip.com").Replace("\\r\\n", "").Replace("\\n", "").Trim();
             var externalIp = IPAddress.Parse(externalIpString);
 
 
