@@ -68,7 +68,7 @@ namespace WindowsGSM.Plugins
             string shipExePath = Functions.ServerPath.GetServersServerFiles(_serverData.ServerID, StartPath);
 
             // Prepare start parameter
-			string param = $" -log -force_steamclient_link -messaging -NoLiveServer -EnableCheats -backendapiurloverride=backend.last-oasis.com"; // Set basic parameters
+			string param = $" -log -force_steamclient_link -messaging -NoLiveServer -EnableCheats -backendapiurloverride=backend-production.last-oasis.com"; // Set basic parameters
 			param += string.IsNullOrWhiteSpace(_serverData.ServerMap) ? string.Empty : $" -identifier={_serverData.ServerMap}"; //Use GUI Map config to set server name
             param += string.IsNullOrWhiteSpace(_serverData.ServerPort) ? string.Empty : $" -port={_serverData.ServerPort}"; 
 			param += string.IsNullOrWhiteSpace(_serverData.ServerParam) ? string.Empty : $" {_serverData.ServerParam}"; 
