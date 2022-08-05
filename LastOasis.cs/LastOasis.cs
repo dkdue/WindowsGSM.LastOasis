@@ -34,7 +34,7 @@ namespace WindowsGSM.Plugins
 
 
         // - Game server Fixed variables
-        public override string StartPath => @"Mist\Binaries\Win64\MistServer-Win64-Shipping.exe"; // Game server start path
+        public override string StartPath => @"Mist\Binaries\Win64\MistServer.exe"; // Game server start path
         public string FullName = "LastOasis Dedicated Server"; // Game server FullName
         public bool AllowsEmbedConsole = true;  // Does this server support output redirect?
         public int PortIncrements = 2; // This tells WindowsGSM how many ports should skip after installation
